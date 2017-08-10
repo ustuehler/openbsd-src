@@ -173,6 +173,7 @@ typedef struct {
 %token	ROUTER RTLABEL TRANSPARENT TRAP UPDATES URL VIRTUAL WITH TTL RTABLE
 %token	MATCH PARAMS RANDOM LEASTSTATES SRCHASH KEY CERTIFICATE PASSWORD ECDH
 %token	EDH CURVE TICKETS
+%token	CHAIN CLIENT FINGERPRINT INDEX SERVER SNI
 %token	<v.string>	STRING
 %token  <v.number>	NUMBER
 %type	<v.string>	hostname interface table value optstring
@@ -1231,7 +1232,7 @@ flag		: STRING			{
 		}
 		;
 
-filterrule	: action dir quick ruleaf rulesrc ruledst {
+filterrule	: action dir quick ruleaf rulesrc ruledst ruletls {
 			if ((rule = calloc(1, sizeof(*rule))) == NULL)
 				fatal("out of memory");
 
@@ -1292,6 +1293,27 @@ rulesrc		: /* XXX */
 		;
 
 ruledst		: /* XXX */
+		;
+
+ruletls		: /* empty */
+		| WITH ssltls tlsruleopts_l
+		;
+
+tlsruleopts_l	: /* empty */
+		| tlsruleopts_t
+		;
+
+tlsruleopts_t	: tlsruleopts tlsruleopts_t
+		| tlsruleopts
+		;
+
+tlsruleopts	: SNI STRING
+		| CLIENT tlspeeropts
+		| SERVER tlspeeropts
+		;
+
+tlspeeropts	: FINGERPRINT STRING
+		| CHAIN INDEX NUMBER FINGERPRINT STRING
 		;
 
 ruleopts_l	: /* empty */
@@ -2191,8 +2213,10 @@ lookup(char *s)
 		{ "ca",			CA },
 		{ "cache",		CACHE },
 		{ "cert",		CERTIFICATE },
+		{ "chain",		CHAIN },
 		{ "check",		CHECK },
 		{ "ciphers",		CIPHERS },
+		{ "client",		CLIENT },
 		{ "code",		CODE },
 		{ "cookie",		COOKIE },
 		{ "curve",		CURVE },
@@ -2206,6 +2230,7 @@ lookup(char *s)
 		{ "expect",		EXPECT },
 		{ "external",		EXTERNAL },
 		{ "file",		FILENAME },
+		{ "fingerprint",	FINGERPRINT },
 		{ "forward",		FORWARD },
 		{ "from",		FROM },
 		{ "hash",		HASH },
@@ -2213,6 +2238,7 @@ lookup(char *s)
 		{ "host",		HOST },
 		{ "icmp",		ICMP },
 		{ "include",		INCLUDE },
+		{ "index",		INDEX },
 		{ "inet",		INET },
 		{ "inet6",		INET6 },
 		{ "interface",		INTERFACE },
@@ -2262,8 +2288,10 @@ lookup(char *s)
 		{ "sack",		SACK },
 		{ "script",		SCRIPT },
 		{ "send",		SEND },
+		{ "server",		SERVER },
 		{ "session",		SESSION },
 		{ "set",		SET },
+		{ "sni",		SNI },
 		{ "snmp",		SNMP },
 		{ "socket",		SOCKET },
 		{ "source-hash",	SRCHASH },
