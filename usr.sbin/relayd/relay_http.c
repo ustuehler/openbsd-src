@@ -71,6 +71,8 @@ int		 relay_httpurl_test(struct ctl_relay_event *,
 		    struct relay_rule *, struct kvlist *);
 int		 relay_httpcookie_test(struct ctl_relay_event *,
 		    struct relay_rule *, struct kvlist *);
+int		 relay_tls_test(struct ctl_relay_event *,
+		    struct relay_rule *, struct kvlist *);
 int		 relay_apply_actions(struct ctl_relay_event *, struct kvlist *);
 int		 relay_match_actions(struct ctl_relay_event *,
 		    struct relay_rule *, struct kvlist *, struct kvlist *);
@@ -1444,6 +1446,20 @@ relay_httpcookie_test(struct ctl_relay_event *cre, struct relay_rule *rule,
 	return (0);
 }
 
+enum relay_result
+relay_tls_test(struct ctl_relay_event *cre, struct relay_rule *rule,
+    struct kvlist *actions)
+{
+	struct rule_tls	*rt = rule->rule_tls;
+
+	if (rt == NULL) {
+		/* rule has no "with tls" clause */
+		return (RES_FAIL);
+	}
+
+	return (RES_DROP);
+}
+
 int
 relay_match_actions(struct ctl_relay_event *cre, struct relay_rule *rule,
     struct kvlist *matches, struct kvlist *actions)
@@ -1750,6 +1766,8 @@ relay_test(struct protocol *proto, struct ctl_relay_event *cre)
 		else if ((res = relay_httpurl_test(cre, r, &matches)) != 0)
 			RELAY_GET_NEXT_STEP;
 		else if ((res = relay_httpcookie_test(cre, r, &matches)) != 0)
+			RELAY_GET_NEXT_STEP;
+		else if ((res = relay_tls_test(cre, r, &matches)) != 0)
 			RELAY_GET_NEXT_STEP;
 		else {
 			DPRINTF("%s: session %d: matched rule %d",
