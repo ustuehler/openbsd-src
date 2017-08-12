@@ -108,6 +108,7 @@ static struct host	*hst = NULL;
 struct relaylist	 relays;
 static struct protocol	*proto = NULL;
 static struct relay_rule *rule = NULL;
+static struct rule_tls	 *rule_tls = NULL;
 static struct router	*router = NULL;
 static int		 label = 0;
 static int		 tagged = 0;
@@ -1232,7 +1233,7 @@ flag		: STRING			{
 		}
 		;
 
-filterrule	: action dir quick ruleaf rulesrc ruledst ruletls {
+filterrule	: action dir quick ruleaf rulesrc ruledst {
 			if ((rule = calloc(1, sizeof(*rule))) == NULL)
 				fatal("out of memory");
 
@@ -1243,7 +1244,7 @@ filterrule	: action dir quick ruleaf rulesrc ruledst ruletls {
 			rule->rule_af = $4;
 
 			rulefile = NULL;
-		} ruleopts_l {
+		} ruletls ruleopts_l {
 			if (rule_add(proto, rule, rulefile) == -1) {
 				if (rulefile == NULL) {
 					yyerror("failed to load rule");
@@ -1296,7 +1297,13 @@ ruledst		: /* XXX */
 		;
 
 ruletls		: /* empty */
-		| WITH ssltls tlsruleopts_l
+		| WITH ssltls {
+			if ((rule_tls = calloc(1, sizeof (*rule_tls))) == NULL)
+				fatal("out of memory");
+		} tlsruleopts_l	{
+			rule->rule_tls = rule_tls;
+			rule_tls = NULL;
+		}
 		;
 
 tlsruleopts_l	: /* empty */
@@ -1307,9 +1314,9 @@ tlsruleopts_t	: tlsruleopts tlsruleopts_t
 		| tlsruleopts
 		;
 
-tlsruleopts	: SNI STRING
-		| CLIENT tlspeeropts
-		| SERVER tlspeeropts
+tlsruleopts	: SNI STRING			{ rule_tls->tls_sni = $2; }
+		| CLIENT tlspeeropts		{ /* TODO */ }
+		| SERVER tlspeeropts		{ /* TODO */ }
 		;
 
 tlspeeropts	: FINGERPRINT STRING

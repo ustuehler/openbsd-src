@@ -610,6 +610,11 @@ struct rule_addr {
 	sockaddr_cmp((struct sockaddr *)&(_a)->addr,			\
 	(struct sockaddr *)&(_b)->addr, (_a)->addr_mask) != 0)
 
+struct rule_tls {
+	char			*tls_sni;
+	/* TODO: add more option fields to struct rule_tls */
+};
+
 struct relay_rule {
 	objid_t			 rule_id;
 	objid_t			 rule_protoid;
@@ -635,6 +640,7 @@ struct relay_rule {
 	int			 rule_af;
 	struct rule_addr	 rule_src;
 	struct rule_addr	 rule_dst;
+	struct rule_tls		*rule_tls;
 	struct relay_table	*rule_table;
 
 	u_int			 rule_method;
