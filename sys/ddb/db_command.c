@@ -614,7 +614,7 @@ struct db_command db_command_table[] = {
 #endif
 	{ "print",	db_print_cmd,		0,		NULL },
 	{ "p",		db_print_cmd,		0,		NULL },
-	{ "pprint",	db_ctf_pprint_cmd,	CS_OWN,		NULL },
+	{ "pprint",	db_ctf_pprint_cmd,	0,		NULL },
 	{ "examine",	db_examine_cmd,		CS_SET_DOT, 	NULL },
 	{ "x",		db_examine_cmd,		CS_SET_DOT, 	NULL },
 	{ "search",	db_search_cmd,		CS_OWN|CS_SET_DOT, NULL },
