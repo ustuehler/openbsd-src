@@ -721,6 +721,7 @@ parse_base(struct dwdie *die, size_t psz)
 	struct itype *it;
 	struct dwaval *dav;
 	uint16_t encoding, enc = 0, bits = 0;
+	const char *name = NULL;
 	int type;
 
 	SIMPLEQ_FOREACH(dav, &die->die_avals, dav_next) {
@@ -731,10 +732,21 @@ parse_base(struct dwdie *die, size_t psz)
 		case DW_AT_byte_size:
 			bits = 8 * dav2val(dav, psz);
 			break;
+		case DW_AT_name:
+			name = dav2str(dav);
+			break;
 		default:
 			DPRINTF("%s\n", dw_at2name(dav->dav_dat->dat_attr));
 			break;
 		}
+	}
+
+        /*
+         * Fall back on known builtin type name if the compiler did
+	 * not generate one.
+         */
+	if (name == NULL) {
+		name = enc2name(enc);
 	}
 
 	switch (enc) {
@@ -791,7 +803,7 @@ parse_base(struct dwdie *die, size_t psz)
 		return (NULL);
 	}
 
-	it = it_new(++tidx, die->die_offset, enc2name(enc), bits,
+	it = it_new(++tidx, die->die_offset, name, bits,
 	    encoding, 0, type, 0);
 
 	return it;
