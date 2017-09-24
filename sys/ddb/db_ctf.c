@@ -562,7 +562,7 @@ db_ctf_pprint_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 	 */
 	t = db_read_token();
 	if (t != tIDENT) {
-		db_printf("Bad symbol name: %s\n", db_tok_string);
+		db_printf("Bad symbol name: %s (token: %d)\n", db_tok_string, t);
 		db_flush_lex();
 		return;
 	}
